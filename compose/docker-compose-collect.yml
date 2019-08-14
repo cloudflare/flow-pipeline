@@ -38,8 +38,8 @@ services:
     entrypoint: '/bin/sh'
     command: >
       -c "sleep 15 ;
-      /goflow -kafka.out.brokers kafka:9092
-      -kafka.out.topic flows"
+      /goflow -kafka.brokers kafka:9092
+      -kafka.topic flows"
   grafana:
     image: 'grafana/grafana:latest'
     ports:
@@ -69,5 +69,5 @@ services:
     build: ../inserter
     restart: always
     command: >
-      /inserter -kafka.brokers kafka:9092 -kafka.topic flows 
+      -kafka.brokers kafka:9092 -kafka.topic flows 
       -postgres.host postgres -postgres.port 5432 -postgres.pass flows
