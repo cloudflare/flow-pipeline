@@ -9,9 +9,7 @@ RUN apk --update --no-cache add git && \
 WORKDIR ${src_dir}
 COPY . .
 
-RUN go get -u github.com/golang/dep/cmd/dep && \
-    dep ensure && \
-    go build
+RUN go build
 
 FROM alpine:latest
 ARG src_dir
