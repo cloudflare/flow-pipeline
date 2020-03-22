@@ -52,13 +52,17 @@ services:
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
   inserter:
-    build: ../inserter
+    build:
+      context: ../
+      dockerfile: Dockerfile.inserter
     restart: always
     command: >
       -kafka.brokers kafka:9092 -kafka.topic flows 
       -postgres.host postgres -postgres.port 5432 -postgres.pass flows
   mocker:
-    build: ../mocker
+    build:
+      context: ../
+      dockerfile: Dockerfile.mocker
     restart: always
     command: >
       -kafka.brokers kafka:9092 -kafka.topic flows

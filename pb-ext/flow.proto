@@ -50,20 +50,6 @@ message FlowMessage {
   uint32 InIf = 18;
   uint32 OutIf = 19;
 
-  // Ethernet information
-  uint64 SrcMac = 27;
-  uint64 DstMac = 28;
-
-  // Vlan
-  uint32 SrcVlan = 33;
-  uint32 DstVlan = 34;
-  // 802.1q VLAN in sampled packet
-  uint32 VlanId = 29;
-
-  // VRF
-  uint32 IngressVrfID = 39;
-  uint32 EgressVrfID = 40;
-
   // IP and TCP special flags
   uint32 IPTos = 23;
   uint32 ForwardingStatus = 24;
@@ -72,53 +58,8 @@ message FlowMessage {
   uint32 IcmpType = 31;
   uint32 IcmpCode = 32;
   uint32 IPv6FlowLabel = 37;
-  // Fragments (IPv4/IPv6)
-  uint32 FragmentId = 35;
-  uint32 FragmentOffset = 36;
-  uint32 BiFlowDirection = 41;
 
   // Autonomous system information
   uint32 SrcAS = 14;
   uint32 DstAS = 15;
-
-  bytes NextHop = 12;
-  uint32 NextHopAS = 13;
-
-  // Prefix size
-  uint32 SrcNet = 16;
-  uint32 DstNet = 17;
-
-  // IP encapsulation information
-  bool HasEncap = 43;
-  bytes SrcAddrEncap = 44;
-  bytes DstAddrEncap = 45;
-  uint32 ProtoEncap = 46;
-  uint32 EtypeEncap = 47;
-  
-  uint32 IPTosEncap = 48;
-  uint32 IPTTLEncap = 49;
-  uint32 IPv6FlowLabelEncap = 50;
-  uint32 FragmentIdEncap = 51;
-  uint32 FragmentOffsetEncap = 52;
-
-  // MPLS information
-  bool HasMPLS = 53;
-  uint32 MPLSCount = 54;
-  uint32 MPLS1TTL = 55; // First TTL
-  uint32 MPLS1Label = 56; // First Label
-  uint32 MPLS2TTL = 57; // Second TTL
-  uint32 MPLS2Label = 58; // Second Label
-  uint32 MPLS3TTL = 59; // Third TTL
-  uint32 MPLS3Label = 60; // Third Label
-  uint32 MPLSLastTTL = 61; // Last TTL
-  uint32 MPLSLastLabel = 62; // Last Label
-
-  // PPP information
-  bool HasPPP = 63;
-  uint32 PPPAddressControl = 64;
-
-  string SrcCountry = 100;
-  string DstCountry = 101;
-  uint32 SrcASDB = 102;
-  uint32 DstASDB = 103;
 }

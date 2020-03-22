@@ -114,10 +114,10 @@ func (s *state) buffer(msg *sarama.ConsumerMessage, cur time.Time) (bool, error,
 		log.Printf("unmarshaling error: ", err)
 	} else {
 		log.Debug(fmsg)
-		ts := time.Unix(int64(fmsg.TimeFlow), 0)
+		ts := time.Unix(int64(fmsg.TimeFlowStart), 0)
 
-		srcip := net.IP(fmsg.SrcIP)
-		dstip := net.IP(fmsg.DstIP)
+		srcip := net.IP(fmsg.SrcAddr)
+		dstip := net.IP(fmsg.DstAddr)
 		srcipstr := srcip.String()
 		dstipstr := dstip.String()
 		if srcipstr == "<nil>" {

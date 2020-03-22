@@ -19,6 +19,8 @@ var (
 
 	KafkaTopic = flag.String("kafka.topic", "flows", "Kafka topic to produce to")
 	KafkaBrk   = flag.String("kafka.brokers", "127.0.0.1:9092,[::1]:9092", "Kafka brokers list separated by commas")
+
+	FixedLength = flag.Bool("proto.fixedlen", false, "Enable fixed length protobuf")
 )
 
 func main() {
@@ -72,25 +74,32 @@ func main() {
 			dstport := rand.Int()
 
 			fmsg := &flow.FlowMessage{
-				SamplingRate: 1,
-				Bytes:        uint64(bytes),
-				Packets:      uint64(packets),
-				SrcAS:        uint32(65000 + srcas),
-				DstAS:        uint32(65000 + dstas),
-				Etype:        0x86dd,
-				SrcIP:        srcip,
-				DstIP:        dstip,
-				TimeFlow:     uint64(ts),
-				TimeRecvd:    uint64(ts),
-				SrcPort:      uint32(srcport & 0xFFFF),
-				DstPort:      uint32(dstport & 0xFFFF),
-				SequenceNum:  i,
+				SamplingRate:  1,
+				Bytes:         uint64(bytes),
+				Packets:       uint64(packets),
+				SrcAS:         uint32(65000 + srcas),
+				DstAS:         uint32(65000 + dstas),
+				Etype:         0x86dd,
+				SrcAddr:       srcip,
+				DstAddr:       dstip,
+				TimeFlowStart: uint64(ts),
+				TimeReceived:  uint64(ts),
+				SrcPort:       uint32(srcport & 0xFFFF),
+				DstPort:       uint32(dstport & 0xFFFF),
+				SequenceNum:   i,
 			}
 			i++
 
 			log.Debugf("Sending to %v: %v", *KafkaTopic, fmsg)
 
-			b, _ := proto.Marshal(fmsg)
+			var b []byte
+			if !*FixedLength {
+				b, _ = proto.Marshal(fmsg)
+			} else {
+				buf := proto.NewBuffer([]byte{})
+				buf.EncodeMessage(fmsg)
+				b = buf.Bytes()
+			}
 			producer.Input() <- &sarama.ProducerMessage{
 				Topic: *KafkaTopic,
 				Value: sarama.ByteEncoder(b),
