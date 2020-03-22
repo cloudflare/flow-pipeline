@@ -52,16 +52,35 @@ A suggestion is extending the GoFlow protobuf with new fields.
 
 ## Run a mock insertion
 
+A mock insertion replaces the GoFlow decoding part. A _mocker_ generates
+protobuf messages and sends them to Kafka.
+
 Clone the repository, then run the following (for Postgres):
 
 ```
-cd compose
-docker-compose -f docker-compose-postgres-mock.yaml
+$ cd compose
+$ docker-compose -f docker-compose-postgres-mock.yaml
 ```
 
 Wait a minute for all the components to start.
 
 You can connect on the local Grafana http://localhost:3000 to look at the flows being collected.
+
+## Run a GoFlow insertion
+
+If you want to send sFlow/NetFlow/IPFIX to a GoFlow, run the following:
+
+Using Postgres:
+```
+$ cd compose
+$ docker-compose -f docker-compose-postgres-collect.yaml
+```
+
+Using Clickhouse (see next section):
+```
+$ cd compose
+$ docker-compose -f docker-compose-clickhouse-collect.yaml
+```
 
 ## About the Clickhouse setup
 
