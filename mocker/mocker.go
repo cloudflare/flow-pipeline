@@ -6,15 +6,15 @@ import (
 	flow "github.com/cloudflare/flow-pipeline/pb-ext"
 	proto "github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"strings"
 	"time"
-	"math/rand"
 )
 
 var (
 	LogLevel = flag.String("loglevel", "info", "Log level")
 
-	ProduceFreq = flag.Int("produce.freq", 100, "Produce interval in ms")
+	ProduceFreq   = flag.Int("produce.freq", 100, "Produce interval in ms")
 	ProduceRandom = flag.Int("produce.random", 300, "Add randomness")
 
 	KafkaTopic = flag.String("kafka.topic", "flows", "Kafka topic to produce to")
@@ -51,16 +51,16 @@ func main() {
 	var i uint32
 	for {
 		select {
-		case <-time.After(time.Millisecond * time.Duration(*ProduceFreq + (rand.Int()%(*ProduceRandom)))):
-			ts := time.Now().UTC().UnixNano()/1000000000
+		case <-time.After(time.Millisecond * time.Duration(*ProduceFreq+(rand.Int()%(*ProduceRandom)))):
+			ts := time.Now().UTC().UnixNano() / 1000000000
 
 			bytes := rand.Int() % 1500
 			packets := rand.Int() % 100
 			srcas := rand.Int() % 3
 			dstas := rand.Int() % 3
 
-			srcip := []byte{0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, }
-			dstip := []byte{0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, }
+			srcip := []byte{0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+			dstip := []byte{0x20, 0x01, 0x0d, 0xb8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
 			tmp := make([]byte, 1)
 			rand.Read(tmp)
@@ -73,18 +73,18 @@ func main() {
 
 			fmsg := &flow.FlowMessage{
 				SamplingRate: 1,
-				Bytes: uint64(bytes),
-				Packets: uint64(packets),
-				SrcAS: uint32(65000+srcas),
-				DstAS: uint32(65000+dstas),
-				Etype: 0x86dd,
-				SrcIP: srcip,
-				DstIP: dstip,
-				TimeFlow: uint64(ts),
-				TimeRecvd: uint64(ts),
-				SrcPort: uint32(srcport&0xFFFF),
-				DstPort: uint32(dstport&0xFFFF),
-				SequenceNum: i,
+				Bytes:        uint64(bytes),
+				Packets:      uint64(packets),
+				SrcAS:        uint32(65000 + srcas),
+				DstAS:        uint32(65000 + dstas),
+				Etype:        0x86dd,
+				SrcIP:        srcip,
+				DstIP:        dstip,
+				TimeFlow:     uint64(ts),
+				TimeRecvd:    uint64(ts),
+				SrcPort:      uint32(srcport & 0xFFFF),
+				DstPort:      uint32(dstport & 0xFFFF),
+				SequenceNum:  i,
 			}
 			i++
 
