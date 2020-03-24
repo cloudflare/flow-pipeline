@@ -70,6 +70,5 @@ services:
       context: ../
       dockerfile: Dockerfile.inserter
     restart: always
-    command: >
-      /inserter -kafka.brokers kafka:9092 -kafka.topic flows 
-      -postgres.host postgres -postgres.port 5432 -postgres.pass flows
+    command:
+      -kafka.brokers kafka:9092 -kafka.topic flows -postgres.host postgres -postgres.port 5432 -postgres.pass flows
