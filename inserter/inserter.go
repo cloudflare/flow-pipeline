@@ -1,11 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/Shopify/sarama"
-	cluster "github.com/bsm/sarama-cluster"
 	flow "github.com/cloudflare/flow-pipeline/pb-ext"
 	proto "github.com/golang/protobuf/proto"
 	_ "github.com/lib/pq"
@@ -17,6 +17,8 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -26,11 +28,12 @@ var (
 	MetricsAddr = flag.String("metrics.addr", ":8081", "Metrics address")
 	MetricsPath = flag.String("metrics.path", "/metrics", "Metrics path")
 
-	KafkaTopic = flag.String("kafka.topic", "flows-processed", "Kafka topic to consume from")
-	KafkaBrk   = flag.String("kafka.brokers", "127.0.0.1:9092,[::1]:9092", "Kafka brokers list separated by commas")
-	KafkaGroup = flag.String("kafka.group", "postgres-inserter", "Kafka group id")
-	FlushTime  = flag.String("flush.dur", "5s", "Flush duration")
-	FlushCount = flag.Int("flush.count", 100, "Flush count")
+	KafkaVersion = flag.String("kafka.version", "2.1.1", "Kafka version")
+	KafkaTopic   = flag.String("kafka.topic", "flows-processed", "Kafka topic to consume from")
+	KafkaBrk     = flag.String("kafka.brokers", "127.0.0.1:9092,[::1]:9092", "Kafka brokers list separated by commas")
+	KafkaGroup   = flag.String("kafka.group", "postgres-inserter", "Kafka group id")
+	FlushTime    = flag.Duration("flush.dur", time.Second*5, "Flush duration")
+	FlushCount   = flag.Int("flush.count", 100, "Flush count")
 
 	PostgresUser   = flag.String("postgres.user", "postgres", "Postgres user")
 	PostgresPass   = flag.String("postgres.pass", "", "Postgres password")
@@ -70,19 +73,23 @@ func (s *state) metricsHTTP() {
 }
 
 type state struct {
+	ready chan bool
+
 	msgCount int
 	last     time.Time
 	dur      time.Duration
 
 	db *sql.DB
 
-	flows    [][]interface{}
-	offstash *cluster.OffsetStash
-	consumer *cluster.Consumer
+	lock  *sync.RWMutex
+	flows [][]interface{}
+
+	flushTimer <-chan time.Time
 }
 
 func (s *state) flush() bool {
 	log.Infof("Processed %d records in the last iteration.", s.msgCount)
+	s.lock.Lock()
 	s.msgCount = 0
 
 	flows_replace := make([]string, len(flow_fields))
@@ -98,14 +105,19 @@ func (s *state) flush() bool {
 		}
 	}
 
-	s.consumer.MarkOffsets(s.offstash)
-	s.offstash = cluster.NewOffsetStash()
 	s.flows = make([][]interface{}, 0)
+	s.lock.Unlock()
 	return true
 }
 
 func (s *state) buffer(msg *sarama.ConsumerMessage, cur time.Time) (bool, error, time.Time) {
+	var flush bool
+	s.lock.Lock()
 	s.msgCount++
+
+	if s.msgCount == *FlushCount {
+		flush = true
+	}
 
 	var fmsg flow.FlowMessage
 
@@ -145,14 +157,42 @@ func (s *state) buffer(msg *sarama.ConsumerMessage, cur time.Time) (bool, error,
 		}
 		s.flows = append(s.flows, extract)
 	}
-	s.offstash.MarkOffset(msg, "")
-
+	s.lock.Unlock()
+	if flush {
+		s.flush()
+	}
 	return false, nil, cur
 }
 
-func closeAll(db *sql.DB, consumer *cluster.Consumer) {
-	consumer.Close()
-	db.Close()
+func (s *state) Setup(sarama.ConsumerGroupSession) error {
+	close(s.ready)
+	return nil
+}
+
+func (s *state) Cleanup(sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (s *state) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for {
+		select {
+		case message := <-claim.Messages():
+			log.Debugf("%s/%d/%d\t%s\t", message.Topic, message.Partition, message.Offset, message.Key)
+			flush, err, _ := s.buffer(message, time.Now().UTC())
+			if flush {
+				s.flush()
+			}
+			if err != nil {
+				log.Errorf("Error while processing: %v", err)
+			}
+			session.MarkMessage(message, "")
+		case <-s.flushTimer:
+			s.flush()
+			s.flushTimer = time.After(*FlushTime)
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -162,19 +202,20 @@ func main() {
 	log.SetLevel(lvl)
 
 	s := &state{
-		last:     time.Time{},
-		offstash: cluster.NewOffsetStash(),
+		last:       time.Time{},
+		lock:       &sync.RWMutex{},
+		flushTimer: time.After(*FlushTime),
+		ready:      make(chan bool),
 	}
 	go s.metricsHTTP()
 
-	config := cluster.NewConfig()
-	brokers := strings.Split(*KafkaBrk, ",")
-	topics := []string{*KafkaTopic}
-	consumer, err := cluster.NewConsumer(brokers, *KafkaGroup, topics, config)
+	kafkaVersion, err := sarama.ParseKafkaVersion(*KafkaVersion)
 	if err != nil {
 		log.Fatal(err)
 	}
-	s.consumer = consumer
+
+	config := sarama.NewConfig()
+	config.Version = kafkaVersion
 
 	pg_pass := *PostgresPass
 	if pg_pass == "" {
@@ -189,38 +230,42 @@ func main() {
 		log.Fatal(err)
 	}
 	s.db = db
-	defer closeAll(db, consumer)
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 
-	durFlush, _ := time.ParseDuration(*FlushTime)
-	var count int
-	timer := time.After(durFlush)
-	for {
-		select {
-		case <-timer:
-			s.flush()
-			timer = time.After(durFlush)
-		case msg, ok := <-consumer.Messages():
-			if ok {
-				log.Debugf("%s/%d/%d\t%s\t", msg.Topic, msg.Partition, msg.Offset, msg.Key)
-				flush, err, _ := s.buffer(msg, time.Now().UTC())
-				if flush {
-					s.flush()
-				}
-				if err != nil {
-					log.Errorf("Error while processing: %v", err)
-				}
-				count++
-				if count == *FlushCount {
-					s.flush()
-					count = 0
-				}
-			}
-		case <-signals:
-			return
-		}
+	ctx, cancel := context.WithCancel(context.Background())
+	client, err := sarama.NewConsumerGroup(strings.Split(*KafkaBrk, ","), *KafkaGroup, config)
+	if err != nil {
+		log.Fatalf("Error creating consumer group client: %v", err)
 	}
-	log.Info("Stopped processing")
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			if err := client.Consume(ctx, strings.Split(*KafkaTopic, ","), s); err != nil {
+				log.Fatalf("Error from consumer: %v", err)
+			}
+			if ctx.Err() != nil {
+				return
+			}
+			s.ready = make(chan bool)
+		}
+	}()
+
+	<-s.ready
+
+	sigterm := make(chan os.Signal, 1)
+	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case <-ctx.Done():
+	case <-sigterm:
+	}
+	cancel()
+	wg.Wait()
+	if err = client.Close(); err != nil {
+		log.Fatalf("Error closing client: %v", err)
+	}
 }
