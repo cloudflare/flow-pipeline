@@ -183,6 +183,45 @@ WHERE SrcAS = 65001
 │ 2020-03-22 │ 2020-03-22 21:25:00 │ 65001 │ 65002 │ [34525]        │ [4820]         │ [288]            │ [6]            │  4820 │     288 │     6 │
 ```
 
+**Regarding the storage of IP addresses:**
+At the moment, the current Clickhouse table does not perform any transformation of the addresses before insertion.
+The bytes are inserted in a `FixedString(16)` regardless of the family (IPv4, IPv6).
+In the dashboards, the function `IPv6NumToString(SrcAddr)` is used.
+
+For example, **192.168.1.1** will end up being **101:a8c0::**
+```sql
+WITH toFixedString(reinterpretAsString(ipv4), 16) AS ipv4c
+SELECT
+    '192.168.1.1' AS ip,
+    IPv4StringToNum(ip) AS ipv4,
+    IPv6NumToString(ipv4c) AS ipv6
+
+┌─ip──────────┬───────ipv4─┬─ipv6───────┐
+│ 192.168.1.1 │ 3232235777 │ 101:a8c0:: │
+└─────────────┴────────────┴────────────┘
+```
+
+In order to convert it:
+```sql
+WITH IPv6StringToNum(ip) AS ipv6
+SELECT
+    '101:a8c0::' AS ip,
+    reinterpretAsUInt32(ipv6) AS ipv6c,
+    IPv4NumToString(ipv6c) AS ipv4
+
+┌─ip─────────┬──────ipv6c─┬─ipv4────────┐
+│ 101:a8c0:: │ 3232235777 │ 192.168.1.1 │
+└────────────┴────────────┴─────────────┘
+```
+
+Which for instance to display either IPv4 or IPv6 in a single query:
+```
+SELECT
+  if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(SrcAddr)), IPv6NumToString(SrcAddr) AS SrcIP
+```
+
+This will be fixed in future dashboard/db schema version.
+
 ## Information and roadmap
 
 This repository is an example and does not offer any warranties. I try to update it whenever I can.
