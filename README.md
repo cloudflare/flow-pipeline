@@ -215,7 +215,7 @@ SELECT
 ```
 
 Which for instance to display either IPv4 or IPv6 in a single query:
-```
+```sql
 SELECT
   if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(SrcAddr)), IPv6NumToString(SrcAddr) AS SrcIP
 ```
