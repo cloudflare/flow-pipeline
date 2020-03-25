@@ -32,7 +32,7 @@ services:
       - '3000:3000'
     restart: always
     volumes:
-      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/datasources-ch.yml:/etc/grafana/provisioning/datasources/datasources-ch.yml
       - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
       - ./grafana/dashboards:/var/lib/grafana/dashboards
   prometheus:
