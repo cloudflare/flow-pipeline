@@ -82,11 +82,20 @@ $ cd compose
 $ docker-compose -f docker-compose-clickhouse-collect.yaml
 ```
 
+Keep in mind this is a development/prototype setup.
+Some components will likely not be able to process more than a few
+thousands rows per second.
+You will likely have to tweak configuration statements,
+number of workers.
+
+Using a production setup, GoFlow was able to process more than +100k flows
+per seconds and insert them in a Clickhouse database.
+
 ## About the Clickhouse setup
 
-The docker-compose does not embed Grafana or Prometheus.
 If you choose to visualize in Grafana, you will need a
 [Clickhouse Data source plugin](https://grafana.com/grafana/plugins/vertamedia-clickhouse-datasource).
+You can connect to the compose Grafana which has the plugin installed.
 
 The insertion is handled natively by Clickhouse:
 * Creates a table with a [Kafka Engine](https://clickhouse.tech/docs/en/operations/table_engines/kafka/).

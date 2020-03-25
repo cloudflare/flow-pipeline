@@ -26,6 +26,15 @@ services:
     command: >
       -c "sleep 15 ;
       kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 2 --topic flows ;"
+  grafana:
+    build: ../grafana
+    ports:
+      - '3000:3000'
+    restart: always
+    volumes:
+      - ./grafana/datasources-ch.yml:/etc/grafana/provisioning/datasources/datasources-ch.yml
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
   mocker:
     build:
       context: ../
@@ -35,6 +44,8 @@ services:
       -kafka.brokers kafka:9092 -kafka.topic flows -proto.fixedlen=true
   db:
     image: yandex/clickhouse-server
+    ports:
+      - 8123:8123
     volumes:
       - ./clickhouse:/docker-entrypoint-initdb.d/
       - ../pb-ext/flow.proto:/var/lib/clickhouse/format_schemas/flow.proto
