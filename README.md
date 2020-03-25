@@ -64,7 +64,7 @@ $ docker-compose -f docker-compose-postgres-mock.yaml
 
 Wait a minute for all the components to start.
 
-You can connect on the local Grafana http://localhost:3000 to look at the flows being collected.
+You can connect on the local Grafana http://localhost:3000 (admin/admin) to look at the flows being collected.
 
 ## Run a GoFlow insertion
 
@@ -195,3 +195,14 @@ I received requests to publish the Flink aggregator source code as you may have 
 being used in GoFlow presentations.
 Unfortunately, we moved entirely towards Clickhouse, the old code has not been updated in a while.
 It may get published at some point but this is currently low priority.
+
+## Issue troubleshooting
+
+The compose files don't bind to specific versions of the containers. You will likely need to `down` in order to clean  the setup (volumes, network), `push` to resynchronize repositories like GoFlow and `build` to rebuild components like inserter .
+
+```bash
+$ docker-compose -f some-yaml-listed-above.yml down
+$ docker-compose -f some-yaml-listed-above.yml pull
+$ docker-compose -f some-yaml-listed-above.yml build
+$ docker-compose -f some-yaml-listed-above.yml up
+```
