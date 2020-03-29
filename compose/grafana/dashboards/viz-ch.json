@@ -2,6 +2,7 @@
   "annotations": {
     "list": [
       {
+        "$$hashKey": "object:631",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -15,7 +16,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 3,
   "links": [],
   "panels": [
     {
@@ -71,8 +71,8 @@
           "group": [],
           "intervalFactor": 1,
           "metricColumn": "none",
-          "query": "SELECT\n    toUInt64(toStartOfMinute($dateTimeCol))*1000 as t,\n    sum(Bytes) as sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
-          "rawQuery": "SELECT     toUInt64(toStartOfMinute(TimeFlowStart))*1000 as t,     sum(Bytes) as sumbytes FROM default.flows_raw WHERE Date >= toDate(1585102878) AND TimeFlowStart >= toDateTime(1585102878) GROUP BY t ORDER BY t",
+          "query": "SELECT\n    toUInt64(toStartOfMinute($dateTimeCol))*1000 as t,\n    sum(Bytes*SamplingRate) as sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT     toUInt64(toStartOfMinute(TimeFlowStart))*1000 as t,     sum(Bytes*SamplingRate) as sumbytes FROM default.flows_raw WHERE Date >= toDate(1585445405) AND TimeFlowStart >= toDateTime(1585445405) GROUP BY t ORDER BY t",
           "rawSql": "SELECT\n  (cast(extract(epoch from time_flow) as integer)/30)*30 AS \"time\",\n  sum(bytes*sampling_rate*8)/30\nFROM flows\nWHERE\n  $__timeFilter(date_inserted)\nGROUP BY \"time\"\nORDER BY \"time\"",
           "refId": "A",
           "round": "0s",
@@ -230,8 +230,8 @@
           "group": [],
           "intervalFactor": 1,
           "metricColumn": "none",
-          "query": "SELECT\n    IPv6NumToString(SrcAddr) as srcip,\n    sum(Bytes) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY srcip\nORDER BY sumbytes DESC",
-          "rawQuery": "SELECT     IPv6NumToString(SrcAddr) as srcip,     sum(Bytes) AS sumbytes FROM default.flows_raw WHERE TimeFlowStart >= toDateTime(1585102969) GROUP BY srcip ORDER BY sumbytes DESC",
+          "query": "SELECT\n    if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(SrcAddr)), IPv6NumToString(SrcAddr)) as srcip,\n    sum(Bytes*SamplingRate) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY srcip\nORDER BY sumbytes DESC",
+          "rawQuery": "SELECT     if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(SrcAddr)), IPv6NumToString(SrcAddr)) as srcip,     sum(Bytes*SamplingRate) AS sumbytes FROM default.flows_raw WHERE TimeFlowStart >= toDateTime(1585445393) GROUP BY srcip ORDER BY sumbytes DESC",
           "rawSql": "SELECT src_ip, count(*), sum(bytes) AS sumBytes FROM flows GROUP BY src_ip",
           "refId": "A",
           "round": "0s",
@@ -282,6 +282,7 @@
       },
       "styles": [
         {
+          "$$hashKey": "object:1506",
           "alias": "Time",
           "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -289,6 +290,7 @@
           "type": "date"
         },
         {
+          "$$hashKey": "object:1507",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -300,12 +302,13 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 0,
           "mappingType": 1,
-          "pattern": ".*_port",
+          "pattern": "port",
           "thresholds": [],
           "type": "number",
           "unit": "none"
         },
         {
+          "$$hashKey": "object:1508",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -323,6 +326,7 @@
           "unit": "decbytes"
         },
         {
+          "$$hashKey": "object:1509",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -351,8 +355,8 @@
           "group": [],
           "intervalFactor": 1,
           "metricColumn": "none",
-          "query": "SELECT\n    SrcPort as port,\n    sum(Bytes) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY port\nORDER BY sumbytes DESC",
-          "rawQuery": "SELECT     SrcPort as port,     sum(Bytes) AS sumbytes FROM default.flows_raw WHERE TimeFlowStart >= toDateTime(1585102995) GROUP BY port ORDER BY sumbytes DESC",
+          "query": "SELECT\n    SrcPort as port,\n    sum(Bytes*SamplingRate) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY port\nORDER BY sumbytes DESC",
+          "rawQuery": "SELECT     toUInt64(toStartOfMinute(TimeFlowStart))*1000 as t,     sum(Bytes*SamplingRate) as sumbytes FROM default.flows_raw WHERE Date >= toDate(1585442922) AND TimeFlowStart >= toDateTime(1585442922) GROUP BY t ORDER BY t",
           "rawSql": "SELECT src_ip, count(*), sum(bytes) AS sumBytes FROM flows GROUP BY src_ip",
           "refId": "A",
           "round": "0s",
@@ -472,8 +476,8 @@
           "group": [],
           "intervalFactor": 1,
           "metricColumn": "none",
-          "query": "SELECT\n    IPv6NumToString(DstAddr) as dstip,\n    sum(Bytes) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY dstip\nORDER BY sumbytes DESC",
-          "rawQuery": "SELECT     toUInt64(toStartOfMinute(TimeFlowStart))*1000 as t,     sum(Bytes) as sumbytes FROM default.flows_raw WHERE Date >= toDate(1585103017) AND TimeFlowStart >= toDateTime(1585103017) GROUP BY t ORDER BY t",
+          "query": "SELECT\n    if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(DstAddr)), IPv6NumToString(DstAddr)) as dstip,\n    sum(Bytes*SamplingRate) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY dstip\nORDER BY sumbytes DESC",
+          "rawQuery": "SELECT     if(EType = 0x800, IPv4NumToString(reinterpretAsUInt32(DstAddr)), IPv6NumToString(DstAddr)) as dstip,     sum(Bytes*SamplingRate) AS sumbytes FROM default.flows_raw WHERE TimeFlowStart >= toDateTime(1585445388) GROUP BY dstip ORDER BY sumbytes DESC",
           "rawSql": "SELECT src_ip, count(*), sum(bytes) AS sumBytes FROM flows GROUP BY src_ip",
           "refId": "A",
           "round": "0s",
@@ -524,6 +528,7 @@
       },
       "styles": [
         {
+          "$$hashKey": "object:1428",
           "alias": "Time",
           "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -531,6 +536,7 @@
           "type": "date"
         },
         {
+          "$$hashKey": "object:1429",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -542,12 +548,13 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "decimals": 0,
           "mappingType": 1,
-          "pattern": ".*_port",
+          "pattern": "port",
           "thresholds": [],
           "type": "number",
           "unit": "none"
         },
         {
+          "$$hashKey": "object:1430",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -565,6 +572,7 @@
           "unit": "decbytes"
         },
         {
+          "$$hashKey": "object:1431",
           "alias": "",
           "align": "auto",
           "colorMode": null,
@@ -593,8 +601,8 @@
           "group": [],
           "intervalFactor": 1,
           "metricColumn": "none",
-          "query": "SELECT\n    DstPort as port,\n    sum(Bytes) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY port\nORDER BY sumbytes DESC",
-          "rawQuery": "SELECT     DstPort as port,     sum(Bytes) AS sumbytes FROM default.flows_raw WHERE TimeFlowStart >= toDateTime(1585103002) GROUP BY port ORDER BY sumbytes DESC",
+          "query": "SELECT\n    DstPort as port,\n    sum(Bytes*SamplingRate) AS sumbytes\nFROM $table\nWHERE $timeFilter\nGROUP BY port\nORDER BY sumbytes DESC",
+          "rawQuery": "SELECT     toUInt64(toStartOfMinute(TimeFlowStart))*1000 as t,     sum(Bytes*SamplingRate) as sumbytes FROM default.flows_raw WHERE Date >= toDate(1585442721) AND TimeFlowStart >= toDateTime(1585442721) GROUP BY t ORDER BY t",
           "rawSql": "SELECT src_ip, count(*), sum(bytes) AS sumBytes FROM flows GROUP BY src_ip",
           "refId": "A",
           "round": "0s",
@@ -633,7 +641,7 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -667,5 +675,5 @@
   "variables": {
     "list": []
   },
-  "version": 2
+  "version": 1
 }
