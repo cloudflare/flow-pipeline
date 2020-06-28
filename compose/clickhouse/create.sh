@@ -2,6 +2,19 @@
 set -e
 
 clickhouse client -n <<-EOSQL
+
+    CREATE DATABASE dictionaries;
+    
+    CREATE DICTIONARY dictionaries.protocols (
+        proto UInt8,
+        name String,
+        description String
+    )
+    PRIMARY KEY proto
+    LAYOUT(FLAT())
+    SOURCE (FILE(path '/var/lib/clickhouse/user_files/protocols.csv' format 'CSVWithNames'))
+    LIFETIME(3600);
+
     CREATE TABLE IF NOT EXISTS flows
     (
         TimeReceived UInt64,

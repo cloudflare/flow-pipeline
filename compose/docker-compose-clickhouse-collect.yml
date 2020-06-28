@@ -67,5 +67,6 @@ services:
     volumes:
       - ./clickhouse:/docker-entrypoint-initdb.d/
       - ../pb-ext/flow.proto:/var/lib/clickhouse/format_schemas/flow.proto
+      - ./clickhouse/protocols.csv:/var/lib/clickhouse/user_files/protocols.csv:ro
     depends_on:
       - 'kafka'
