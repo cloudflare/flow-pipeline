@@ -123,7 +123,7 @@ func (s *state) buffer(msg *sarama.ConsumerMessage, cur time.Time) (bool, error,
 
 	err := proto.Unmarshal(msg.Value, &fmsg)
 	if err != nil {
-		log.Printf("unmarshaling error: ", err)
+		log.Printf("unmarshalling error: ", err)
 	} else {
 		log.Debug(fmsg)
 		ts := time.Unix(int64(fmsg.TimeFlowStart), 0)
