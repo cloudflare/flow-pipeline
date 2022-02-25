@@ -23,6 +23,8 @@ clickhouse client -n <<-EOSQL
         SrcPort UInt32,
         DstPort UInt32,
 
+        InIf UInt32,
+
         Bytes UInt64,
         Packets UInt64
     ) ENGINE = Kafka()
@@ -31,7 +33,7 @@ clickhouse client -n <<-EOSQL
         kafka_topic_list = 'flows',
         kafka_group_name = 'clickhouse',
         kafka_format = 'Protobuf',
-        kafka_schema = './flow.proto:FlowMessage';
+        kafka_schema = 'flow.proto:FlowMessage';
 
     CREATE TABLE IF NOT EXISTS flows_raw
     (
@@ -55,13 +57,15 @@ clickhouse client -n <<-EOSQL
         SrcPort UInt32,
         DstPort UInt32,
 
+        InIf UInt32,
+
         Bytes UInt64,
         Packets UInt64
     ) ENGINE = MergeTree()
     PARTITION BY Date
     ORDER BY TimeReceived;
 
-    CREATE MATERIALIZED VIEW IF NOT EXISTS flows_raw_view TO flows_raw 
+    CREATE MATERIALIZED VIEW IF NOT EXISTS flows_raw_view TO flows_raw
     AS SELECT
         toDate(TimeReceived) AS Date,
         *
@@ -72,8 +76,11 @@ clickhouse client -n <<-EOSQL
         Date Date,
         Timeslot DateTime,
 
-        SrcAS UInt32,
-        DstAS UInt32,
+        SamplerAddress FixedString(16),
+        InIf UInt32,
+
+        -- SrcAS UInt32,
+        -- DstAS UInt32,
 
         ETypeMap Nested (
             EType UInt32,
@@ -87,15 +94,15 @@ clickhouse client -n <<-EOSQL
         Count UInt64
     ) ENGINE = SummingMergeTree()
     PARTITION BY Date
-    ORDER BY (Date, Timeslot, SrcAS, DstAS, \`ETypeMap.EType\`);
+    ORDER BY (Date, Timeslot, SamplerAddress, InIf, \`ETypeMap.EType\`);
 
-    CREATE MATERIALIZED VIEW IF NOT EXISTS flows_5m_view TO flows_5m 
+    CREATE MATERIALIZED VIEW IF NOT EXISTS flows_5m_view TO flows_5m
     AS
         SELECT
             Date,
             toStartOfFiveMinute(TimeReceived) AS Timeslot,
-            SrcAS,
-            DstAS,
+            SamplerAddress,
+            InIf,
 
             [EType] AS \`ETypeMap.EType\`,
             [Bytes] AS \`ETypeMap.Bytes\`,
@@ -107,6 +114,6 @@ clickhouse client -n <<-EOSQL
             count() AS Count
 
         FROM flows_raw
-        GROUP BY Date, Timeslot, SrcAS, DstAS, \`ETypeMap.EType\`;
-        
+        GROUP BY Date, Timeslot, SamplerAddress, InIf, \`ETypeMap.EType\`;
+
 EOSQL
