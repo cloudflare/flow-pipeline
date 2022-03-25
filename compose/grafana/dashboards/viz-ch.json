@@ -375,6 +375,7 @@
             "mode": "thresholds"
           },
           "custom": {
+            "align": "auto",
             "displayMode": "auto"
           },
           "decimals": 0,
