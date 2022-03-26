@@ -10,7 +10,6 @@ The demo directory contains a startup file for an example pipeline including:
 * A mock collector
 * Kafka/Zookeeper
 * A database (Postgres/clickhouse)
-* An inserter: to insert the flows in a database (for Postgres)
 
 It will listen on port 6343/UDP for sFlow and 2055/UDP for NetFlow.
 
