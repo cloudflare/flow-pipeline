@@ -50,31 +50,10 @@ or customer information.
 
 A suggestion is extending the GoFlow protobuf with new fields.
 
-## Run a mock insertion
-
-A mock insertion replaces the GoFlow decoding part. A _mocker_ generates
-protobuf messages and sends them to Kafka.
-
-Clone the repository, then run the following (for Postgres):
-
-```
-$ cd compose
-$ docker-compose -f docker-compose-postgres-mock.yaml
-```
-
-Wait a minute for all the components to start.
-
-You can connect on the local Grafana http://localhost:3000 (admin/admin) to look at the flows being collected.
 
 ## Run a GoFlow insertion
 
 If you want to send sFlow/NetFlow/IPFIX to a GoFlow, run the following:
-
-Using Postgres:
-```
-$ cd compose
-$ docker-compose -f docker-compose-postgres-collect.yml
-```
 
 Using Clickhouse (see next section):
 ```
@@ -222,26 +201,3 @@ SELECT
 
 This will be fixed in future dashboard/db schema version.
 
-## Information and roadmap
-
-This repository is an example and does not offer any warranties. I try to update it whenever I can.
-Contributions are welcome.
-
-The main purpose is for users to get started quickly and provide a basic system.
-This should not be used in production.
-
-I received requests to publish the Flink aggregator source code as you may have seen it
-being used in GoFlow presentations.
-Unfortunately, we moved entirely towards Clickhouse, the old code has not been updated in a while.
-It may get published at some point but this is currently low priority.
-
-## Issue troubleshooting
-
-The compose files don't bind to specific versions of the containers. You will likely need to `down` in order to clean  the setup (volumes, network), `push` to resynchronize repositories like GoFlow and `build` to rebuild components like inserter .
-
-```bash
-$ docker-compose -f some-yaml-listed-above.yml down
-$ docker-compose -f some-yaml-listed-above.yml pull
-$ docker-compose -f some-yaml-listed-above.yml build
-$ docker-compose -f some-yaml-listed-above.yml up
-```
