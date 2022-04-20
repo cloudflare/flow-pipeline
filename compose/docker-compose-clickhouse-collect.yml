@@ -69,3 +69,4 @@ services:
       - ../pb-ext/flow.proto:/var/lib/clickhouse/format_schemas/flow.proto
     depends_on:
       - 'kafka'
+    restart: always      
