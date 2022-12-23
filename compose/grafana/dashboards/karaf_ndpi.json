@@ -1,0 +1,2168 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 6,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 65,
+      "panels": [],
+      "title": "Device/Protocol/Port Debug Plane",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By 1 second",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "fillOpacity": 63,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "mars_check, 80, HTTP, Web"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 61,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        },
+        "xField": "Time",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 300
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_first_seen",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n     $timeSeries as t,\n\t  alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n    (sum(flow_src_packets_processed)+sum(flow_src_packets_processed)) as t_sum\nFROM $table\n\nWHERE $timeFilter and ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\n\nGROUP BY t, alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t\n",
+          "rawQuery": "SELECT\n     (intDiv(toUInt32(flow_first_seen), 1) * 1) * 1000 as t,\n\t  alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n    (sum(flow_src_packets_processed)+sum(flow_src_packets_processed)) as t_sum\nFROM default.Flow\n\nWHERE flow_first_seen >= toDateTime(1671695332) AND flow_first_seen <= toDateTime(1671695632) and ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\n\nGROUP BY t, alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        }
+      ],
+      "title": "Device, Dest Port, Ndpi Proto, Ndpi Category",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By 30 Second",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "mars_check, 546, DHCPV6, Network"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 63,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_first_seen",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    hop(flow_first_seen, toIntervalSecond('30'), toIntervalSecond('30')) as t,\n\t  alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n    (sum(flow_src_packets_processed)+sum(flow_src_packets_processed)) as t_sum\nFROM $table\n\nWHERE $timeFilter and ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\n\nGROUP BY t, alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t\n",
+          "rawQuery": "SELECT\n    hop(flow_first_seen, toIntervalSecond('30'), toIntervalSecond('30')) as t,\n\t  alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n    (sum(flow_src_packets_processed)+sum(flow_src_packets_processed)) as t_sum\nFROM default.Flow\n\nWHERE flow_first_seen >= toDateTime(1671695362) AND flow_first_seen <= toDateTime(1671695662) and ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\n\nGROUP BY t, alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        }
+      ],
+      "title": "Device, Dest Port, Ndpi Proto, Ndpi Category",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 51,
+      "panels": [],
+      "title": "Device Flow Count",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "source packet \n+\ndestination packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "hidden",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 43,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelMaxLength": 0,
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 300
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "\nSELECT\n    \n    hop((flow_first_seen  + interval 28800 second), toIntervalMinute('1'), toIntervalMinute('1')) AS t,\n    alias,\n    sum(flow_src_packets_processed) AS src,\n    sum(flow_dst_packets_processed) AS dst\nFROM Flow\nGROUP BY t, alias\norder by t desc limit 15\n",
+          "rawQuery": "SELECT\n    \n    hop((flow_first_seen  + interval 28800 second), toIntervalMinute('1'), toIntervalMinute('1')) AS t,\n    alias,\n    sum(flow_src_packets_processed) AS src,\n    sum(flow_dst_packets_processed) AS dst\nFROM Flow\nGROUP BY t, alias\norder by t desc limit 15",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Device Flow Count(1 min)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "source packet \n+\ndestination packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 45,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 300
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_idle_time",
+          "dateTimeType": "TIMESTAMP",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    hop((flow_first_seen + interval 28800 second), toIntervalMinute('60'), toIntervalMinute('60')) AS t,\n    alias,\n    sum(flow_src_packets_processed) AS src,\n    sum(flow_dst_packets_processed) AS dst\nFROM Flow\nGROUP BY t, alias\norder by t desc limit 20\n",
+          "rawQuery": "SELECT\n    hop((flow_first_seen + interval 28800 second), toIntervalMinute('60'), toIntervalMinute('60')) AS t,\n    alias,\n    sum(flow_src_packets_processed) AS src,\n    sum(flow_dst_packets_processed) AS dst\nFROM Flow\nGROUP BY t, alias\norder by t desc limit 20",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        }
+      ],
+      "title": "Device Flow Count Top 20(60 min Stack)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "source packet \n+\ndestination packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 28,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 57,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_first_seen",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    SUM(CASE WHEN alias = 'manager' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as manager\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t\n\nORDER BY t\n",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(flow_first_seen), 1) * 1) * 1000 as t,\n    SUM(CASE WHEN alias = 'manager' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as manager\nFROM default.Flow\n\nWHERE flow_first_seen >= toDateTime(1671686907) AND flow_first_seen <= toDateTime(1671687207)\n\nGROUP BY t\n\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        },
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_first_seen",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    SUM(CASE WHEN alias = 'mars_check' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as mars_check\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t\n\nORDER BY t\n",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(flow_first_seen), 1) * 1) * 1000 as t,\n    SUM(CASE WHEN alias = 'mars_check' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as mars_check\nFROM default.Flow\n\nWHERE flow_first_seen >= toDateTime(1671686907) AND flow_first_seen <= toDateTime(1671687207)\n\nGROUP BY t\n\nORDER BY t",
+          "refId": "B",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        },
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "flow_first_seen",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    SUM(CASE WHEN alias = 'server01' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as server01\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t\n\nORDER BY t\n",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(flow_first_seen), 1) * 1) * 1000 as t,\n    SUM(CASE WHEN alias = 'server01' THEN (flow_src_packets_processed+flow_src_packets_processed) else 0 END) as server01\nFROM default.Flow\n\nWHERE flow_first_seen >= toDateTime(1671686907) AND flow_first_seen <= toDateTime(1671687207)\n\nGROUP BY t\n\nORDER BY t",
+          "refId": "C",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        }
+      ],
+      "title": "Each Device  Packet Count",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 41,
+      "panels": [],
+      "title": "DPI Flow Count",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "id": 10,
+      "libraryPanel": {
+        "name": "Device+Protocol+DPI(src+dst)",
+        "uid": "4EnCMr5Vk"
+      },
+      "title": "Device+Protocol+DPI(src+dst)"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "1: port != 0\n2:protocol not contain BIOS",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "from": 2135010,
+                "result": {
+                  "color": "orange",
+                  "index": 0
+                },
+                "to": 1000000000000000000
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "id": 49,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^t_sum$/",
+          "limit": 100,
+          "values": true
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "Select\n   alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n   (SUM(flow_src_packets_processed)+SUM(flow_dst_packets_processed)) t_sum\nFrom Flow\nwhere ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\nGROUP BY alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t_sum desc\n",
+          "rawQuery": "Select\n   alias, toString(dst_port) as dst_p, ndpi_proto, ndpi_category,\n   (SUM(flow_src_packets_processed)+SUM(flow_dst_packets_processed)) t_sum\nFrom Flow\nwhere ndpi_proto NOT LIKE '%BIOS%' and dst_port != 0\nGROUP BY alias, dst_p, ndpi_proto, ndpi_category\n\nORDER BY t_sum desc",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Device+Dst Port+DPI Protocol and Category",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "id": 47,
+      "options": {
+        "displayMode": "basic",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT \n   alias, src_ip, ndpi_proto, (SUM(flow_src_packets_processed)+SUM(flow_dst_packets_processed)) t_sum\nFROM Flow\nGROUP BY alias, src_ip, ndpi_proto\nORDER BY t_sum desc\n\n",
+          "rawQuery": "SELECT \n   alias, src_ip, ndpi_proto, (SUM(flow_src_packets_processed)+SUM(flow_dst_packets_processed)) t_sum\nFROM Flow\nGROUP BY alias, src_ip, ndpi_proto\nORDER BY t_sum desc",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "Flow",
+          "tableLoading": false
+        }
+      ],
+      "title": "Device+Src_ip+DPI(src+dst)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "id": 55,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^total_sum$/",
+          "values": true
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n alias, dst_ip, src_ip, l4_proto, toString(src_port) as src_p, toString(dst_port) as dst_p, ndpi_proto,\n (sum(flow_src_packets_processed) + sum(flow_dst_packets_processed)) as total_sum\nFROM Flow\nGROUP BY alias, dst_ip, src_ip, l4_proto, src_p , dst_p, ndpi_proto\nORDER BY total_sum desc limit 1000\n\n",
+          "rawQuery": "SELECT\n alias, dst_ip, src_ip, l4_proto, toString(src_port) as src_p, toString(dst_port) as dst_p, ndpi_proto,\n (sum(flow_src_packets_processed) + sum(flow_dst_packets_processed)) as total_sum\nFROM Flow\nGROUP BY alias, dst_ip, src_ip, l4_proto, src_p , dst_p, ndpi_proto\nORDER BY total_sum desc limit 1000",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Device+5 tuple+DPI",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
+      "id": 35,
+      "panels": [],
+      "title": "DPI",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By source packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "max": 5,
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 52
+      },
+      "id": 33,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^sum\\(flow_src_packets_processed\\)$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    src_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY src_ip, ndpi_proto\n",
+          "rawQuery": "SELECT\n    src_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY src_ip, ndpi_proto",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "IPV4 Src + DPI",
+      "transparent": true,
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By source packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 52
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    alias, src_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY alias, src_ip, ndpi_proto\n",
+          "rawQuery": "SELECT\n    alias, src_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY alias, src_ip, ndpi_proto",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Device + SIP + DPI",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By Source Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "id": 39,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "uniqueValues"
+          ],
+          "fields": "/^sum\\(flow_src_packets_processed\\)$/",
+          "limit": 200,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    alias, src_ip, dst_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY alias, src_ip, dst_ip, ndpi_proto\n\n",
+          "rawQuery": "SELECT\n    alias, src_ip, dst_ip, ndpi_proto,\n    SUM(flow_src_packets_processed)\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY alias, src_ip, dst_ip, ndpi_proto",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "Devices+SIP+DIP+DPI",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
+      "id": 31,
+      "panels": [],
+      "title": "IP Flow Count",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By Source Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 69
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "/^c$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    src_ip, SUM(flow_src_packets_processed) as c\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY src_ip\norder by c desc\n",
+          "rawQuery": "SELECT\n    src_ip, SUM(flow_src_packets_processed) as c\nFROM Flow\nWHERE src_ip LIKE ('%.%')\nGROUP BY src_ip\norder by c desc",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "IPV4 Address",
+      "transparent": true,
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By Destination Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 69
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "max"
+          ],
+          "fields": "/^c$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    dst_ip, (sum(flow_dst_packets_processed)) as c\nFROM Flow\nWHERE dst_ip LIKE ('%.%')\nGROUP BY dst_ip\norder by c desc\n",
+          "rawQuery": "SELECT\n    dst_ip, (sum(flow_dst_packets_processed)) as c\nFROM Flow\nWHERE dst_ip LIKE ('%.%')\nGROUP BY dst_ip\norder by c desc",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "IPV4 Address",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By Source Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 77
+      },
+      "id": 53,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    src_ip, SUM(flow_src_packets_processed) as c\nFROM Flow\nWHERE src_ip LIKE ('%:%')\nGROUP BY src_ip\norder by c desc\n",
+          "rawQuery": "SELECT\n    src_ip, SUM(flow_src_packets_processed) as c\nFROM Flow\nWHERE src_ip LIKE ('%:%')\nGROUP BY src_ip\norder by c desc",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "IPV6 Address",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "By Destination Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 77
+      },
+      "id": 29,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^sum\\(flow_dst_packets_processed\\)$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n    dst_ip, SUM(flow_dst_packets_processed)\nFROM Flow\nWHERE dst_ip LIKE ('%:%')\nGROUP BY dst_ip\n",
+          "rawQuery": "SELECT\n    dst_ip, SUM(flow_dst_packets_processed)\nFROM Flow\nWHERE dst_ip LIKE ('%:%')\nGROUP BY dst_ip",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "IPV6 Address",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 85
+      },
+      "id": 21,
+      "panels": [],
+      "title": "5 tuple + DPI",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "Source Packet + Destination Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "src_port"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 67
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "l4_proto"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 68
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 17,
+        "x": 0,
+        "y": 86
+      },
+      "id": 23,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n dst_ip, src_ip, l4_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (dst_sum+src_sum) as src_dst,\n Count(*) as total_sum\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port\nORDER BY src_dst desc limit 1000\n",
+          "rawQuery": "SELECT\n dst_ip, src_ip, l4_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (dst_sum+src_sum) as src_dst,\n Count(*) as total_sum\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port\nORDER BY src_dst desc limit 1000",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "5 tuple(Limit 1000)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "Source Packet + Destination Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 17,
+        "y": 86
+      },
+      "id": 59,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^dst_src$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n dst_ip, src_ip, l4_proto, src_port, dst_port, Count(*) as total_sum,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (dst_sum+src_sum) as dst_src\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port\nORDER BY dst_src desc limit 1000",
+          "rawQuery": "SELECT\n dst_ip, src_ip, l4_proto, src_port, dst_port, Count(*) as total_sum,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (dst_sum+src_sum) as dst_src\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port\nORDER BY dst_src desc limit 1000",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "5 tuple(Top 100)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "src_port"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 96
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "l4_proto"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 75
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_sum"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 87
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ndpi_proto"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 102
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 17,
+        "x": 0,
+        "y": 94
+      },
+      "id": 27,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n dst_ip, src_ip, l4_proto, ndpi_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (src_sum+dst_sum) as src_dst,\n  Count(*) as total_sum\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port, ndpi_proto\nORDER BY src_dst desc limit 1000\n",
+          "rawQuery": "SELECT\n dst_ip, src_ip, l4_proto, ndpi_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (src_sum+dst_sum) as src_dst,\n  Count(*) as total_sum\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, src_port , dst_port, ndpi_proto\nORDER BY src_dst desc limit 1000",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "5 tuple(DPI+Limit 1000)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PDEE91DDB90597936"
+      },
+      "description": "Source Packet + Destination Packet",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 17,
+        "y": 94
+      },
+      "id": 25,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^src_dst$/",
+          "limit": 100,
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\n dst_ip, src_ip, l4_proto, ndpi_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (src_sum+dst_sum) as src_dst\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, ndpi_proto, src_port , dst_port\nORDER BY src_dst desc limit 1000\n",
+          "rawQuery": "SELECT\n dst_ip, src_ip, l4_proto, ndpi_proto, src_port, dst_port,\n sum(flow_dst_packets_processed) as dst_sum,\n sum(flow_src_packets_processed) as src_sum,\n (src_sum+dst_sum) as src_dst\nFROM Flow\nGROUP BY dst_ip, src_ip, l4_proto, ndpi_proto, src_port , dst_port\nORDER BY src_dst desc limit 1000",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "5 tuple(DPI Top 100)",
+      "type": "piechart"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 102
+      },
+      "id": 19,
+      "panels": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 30
+          },
+          "id": 2,
+          "options": {
+            "footer": {
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "database": "information_schema",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "PDEE91DDB90597936"
+              },
+              "dateTimeType": "DATETIME",
+              "extrapolate": true,
+              "format": "table",
+              "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+              "intervalFactor": 1,
+              "query": "SELECT * FROM Daemon Limit 200\n\n",
+              "rawQuery": "SELECT * FROM Daemon Limit 200",
+              "refId": "A",
+              "round": "0s",
+              "skip_comments": true
+            }
+          ],
+          "title": "Deamon",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 38
+          },
+          "id": 6,
+          "options": {
+            "footer": {
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "database": "Packet",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "PDEE91DDB90597936"
+              },
+              "dateLoading": false,
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "extrapolate": true,
+              "format": "table",
+              "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+              "intervalFactor": 1,
+              "query": "SELECT \n   *\nFROM Flow\nlimit 200\n",
+              "rawQuery": "SELECT \n   *\nFROM Flow\nlimit 200",
+              "refId": "A",
+              "round": "0s",
+              "skip_comments": true
+            }
+          ],
+          "title": "Flow",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 47
+          },
+          "id": 8,
+          "options": {
+            "footer": {
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "database": "default",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "PDEE91DDB90597936"
+              },
+              "dateColDataType": "",
+              "dateLoading": false,
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "extrapolate": true,
+              "format": "table",
+              "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+              "intervalFactor": 1,
+              "query": "SELECT\n    *\nFROM $table\n",
+              "rawQuery": "SELECT\n    *\nFROM default.Error",
+              "refId": "A",
+              "round": "0s",
+              "skip_comments": true,
+              "table": "Error",
+              "tableLoading": false
+            }
+          ],
+          "title": "Error",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PDEE91DDB90597936"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 54
+          },
+          "id": 4,
+          "options": {
+            "footer": {
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "packet_event_id"
+              }
+            ]
+          },
+          "pluginVersion": "9.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "PDEE91DDB90597936"
+              },
+              "dateTimeType": "DATETIME",
+              "extrapolate": true,
+              "format": "table",
+              "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+              "intervalFactor": 1,
+              "query": "SELECT\n    *\nFROM Packet\nlimit 200\n",
+              "rawQuery": "SELECT\n    *\nFROM Packet\nlimit 200",
+              "refId": "A",
+              "round": "0s",
+              "skip_comments": true
+            }
+          ],
+          "title": "Packet",
+          "type": "table"
+        }
+      ],
+      "title": "Flow Table",
+      "type": "row"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Karaf With nDPI",
+  "uid": "VOGLZtcVk",
+  "version": 3,
+  "weekStart": ""
+}
