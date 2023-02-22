@@ -12,7 +12,7 @@ datasources:
    type: vertamedia-clickhouse-datasource
    typeLogoUrl: ''
    access: proxy
-   url: http://db:8123
+   url: http://localhost:8123
    password: ''
    user: ''
    database: ''

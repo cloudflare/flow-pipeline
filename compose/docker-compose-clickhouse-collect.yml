@@ -2,17 +2,16 @@ version: "3"
 services:
   zookeeper:
     image: 'bitnami/zookeeper:latest'
-    ports:
-      - '2181:2181'
+    network_mode: "host"
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     restart: always
   kafka:
     image: 'bitnami/kafka:latest'
-    ports:
-      - '9092:9092'
+    network_mode: "host"
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://124.219.108.6:9092
+      - KAFKA_ZOOKEEPER_CONNECT=124.219.108.6:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_DELETE_TOPIC_ENABLE=true
     restart: always
@@ -20,18 +19,19 @@ services:
       - 'zookeeper'
   initializer:
     image: 'bitnami/kafka:latest'
+    network_mode: "host"
     depends_on:
       - 'kafka'
     entrypoint: '/bin/bash'
     command: >
-      -c "sleep 15 ;
-      kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 2 --topic flows ;"
+      -c "sleep 30 ;
+      kafka-topics.sh --bootstrap-server 124.219.108.6:9092 --create --topic flows --partitions 2 ;
+      kafka-topics.sh --bootstrap-server 124.219.108.6:9092 --create --topic events --partitions 5"
   grafana:
     build: ../grafana
     environment:
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
-    ports:
-      - '3000:3000'
+    network_mode: "host"
     restart: always
     volumes:
       - ./grafana/datasources-ch.yml:/etc/grafana/provisioning/datasources/datasources-ch.yml
@@ -39,8 +39,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
   prometheus:
     image: 'prom/prometheus'
-    ports:
-      - '9090:9090'
+    network_mode: "host"
     restart: always
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -48,25 +47,21 @@ services:
     image: 'cloudflare/goflow:latest'
     depends_on:
       - 'initializer'
-    ports:
-      - '8080:8080'
-      - '6343:6343/udp'
-      - '2055:2055/udp'
+    network_mode: "host"
     restart: always
     entrypoint: '/bin/sh'
     command: >
       -c "sleep 15 ;
-      /goflow -kafka.brokers kafka:9092
+      /goflow -kafka.brokers 124.219.108.6:9092
       -kafka.topic flows
       -proto.fixedlen=true
       "
   db:
     image: yandex/clickhouse-server
-    ports:
-      - 8123:8123
+    network_mode: "host"
     volumes:
       - ./clickhouse:/docker-entrypoint-initdb.d/
       - ../pb-ext/flow.proto:/var/lib/clickhouse/format_schemas/flow.proto
     depends_on:
       - 'kafka'
-    restart: always      
+    restart: always
