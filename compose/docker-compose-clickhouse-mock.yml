@@ -1,23 +1,13 @@
 version: "3"
 services:
-  zookeeper:
-    image: 'bitnami/zookeeper:latest'
-    ports:
-      - '2181:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    restart: always
   kafka:
     image: 'bitnami/kafka:latest'
     ports:
       - '9092:9092'
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_DELETE_TOPIC_ENABLE=true
     restart: always
-    depends_on:
-      - 'zookeeper'
   initializer:
     image: 'bitnami/kafka:latest'
     depends_on:
@@ -25,9 +15,11 @@ services:
     entrypoint: '/bin/bash'
     command: >
       -c "sleep 15 ;
-      kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 2 --topic flows ;"
+      kafka-topics.sh --create --bootstrap-server kafka:9092 --replication-factor 1 --partitions 2 --topic flows ;"
   grafana:
     build: ../grafana
+    environment:
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
     ports:
       - '3000:3000'
     restart: always
