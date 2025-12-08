@@ -7,5 +7,5 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/lib/pq v1.3.0
 	github.com/prometheus/client_golang v1.11.1
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.8.3
 )
